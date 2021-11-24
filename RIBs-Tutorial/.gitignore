@@ -16,6 +16,7 @@ TadaDriver/Resources/R.swift
 TadaRider/Resources/R.swift
 TadaRider/Sources/Network/RiderTargets.swift
 TadaRider/GeneratedFiles
+tutorial/Podfile.lock
 
 ## Various settings
 *.pbxuser

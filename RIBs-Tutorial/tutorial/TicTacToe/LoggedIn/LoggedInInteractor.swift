@@ -39,7 +39,10 @@ final class LoggedInInteractor: Interactor, LoggedInInteractable {
 
     // TODO: Add additional dependencies to constructor. Do not perform any logic
     // in constructor.
-    override init() {}
+//    override init() {}
+    init(mutableScoreStream: MutableScoreStream) {
+        self.mutableScoreStream = mutableScoreStream
+    }
 
     override func didBecomeActive() {
         super.didBecomeActive()
@@ -52,16 +55,21 @@ final class LoggedInInteractor: Interactor, LoggedInInteractable {
         router?.cleanupViews()
         // TODO: Pause any business logic.
     }
-
     // MARK: - OffGameListener
-
     func startTicTacToe() {
         router?.routeToTicTacToe()
     }
 
     // MARK: - TicTacToeListener
-
-    func gameDidEnd() {
+    func gameDidEnd(withWinner winner: PlayerType?) {
+        if let winner = winner {
+            mutableScoreStream.updateScore(withWinner: winner)
+        }
+        else{
+            mutableScoreStream.updateScore(withWinner: nil)
+        }
         router?.routeToOffGame()
     }
+    
+    private let mutableScoreStream: MutableScoreStream
 }

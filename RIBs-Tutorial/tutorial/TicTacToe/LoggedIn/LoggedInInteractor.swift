@@ -1,19 +1,31 @@
 //
-//  LoggedInInteractor.swift
-//  TicTacToe
+//  Copyright (c) 2017. Uber Technologies
 //
-//  Created by M Kim on 2021/11/24.
-//  Copyright © 2021 Uber. All rights reserved.
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 
 import RIBs
 import RxSwift
 
+enum PlayerType: Int {
+    case player1 = 1
+    case player2
+}
+
 protocol LoggedInRouting: Routing {
-    // TODO: Declare methods the interactor can invoke to manage sub-tree via the router.
+    func cleanupViews()
     func routeToTicTacToe()
     func routeToOffGame()
-    func cleanupViews()
 }
 
 protocol LoggedInListener: AnyObject {
@@ -27,11 +39,10 @@ final class LoggedInInteractor: Interactor, LoggedInInteractable {
 
     // TODO: Add additional dependencies to constructor. Do not perform any logic
     // in constructor.
-//    override init(presenter: LoggedInPresentable) {
-//        super.init(presenter: presenter)
-//        presenter.listener = self
-//    }
-    override init() {}
+//    override init() {}
+    init(mutableScoreStream: MutableScoreStream) {
+        self.mutableScoreStream = mutableScoreStream
+    }
 
     override func didBecomeActive() {
         super.didBecomeActive()
@@ -40,10 +51,25 @@ final class LoggedInInteractor: Interactor, LoggedInInteractable {
 
     override func willResignActive() {
         super.willResignActive()
+
+        router?.cleanupViews()
         // TODO: Pause any business logic.
     }
-    
-    func gameDidEnd(){
+    // MARK: - OffGameListener
+    func startTicTacToe() {
+        router?.routeToTicTacToe()
+    }
+
+    // MARK: - TicTacToeListener
+    func gameDidEnd(withWinner winner: PlayerType?) {
+        if let winner = winner {
+            mutableScoreStream.updateScore(withWinner: winner)
+        }
+        else{
+            mutableScoreStream.updateScore(withWinner: nil)
+        }
         router?.routeToOffGame()
     }
+    
+    private let mutableScoreStream: MutableScoreStream
 }

@@ -27,6 +27,7 @@ protocol RootViewControllable: ViewControllable {
 }
 
 final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, RootRouting {
+
     init(interactor: RootInteractable,
          viewController: RootViewControllable,
          loggedOutBuilder: LoggedOutBuildable,
@@ -39,23 +40,28 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
 
     override func didLoad() {
         super.didLoad()
+
         routeToLoggedOut()
     }
-    // MARK: - Private
-    private let loggedOutBuilder: LoggedOutBuildable
-    private let loggedInBuilder: LoggedInBuildable
-    private var loggedOut: ViewableRouting?
-    
-    // MARK: - RootRouting
-    func routeToLoggedIn(withPlayer1Name player1Name:String, player2Name: String){
-        if let loggedOut = self.loggedOut{
+
+    func routeToLoggedIn(withPlayer1Name player1Name: String, player2Name: String) {
+        // Detach logged out.
+        if let loggedOut = self.loggedOut {
             detachChild(loggedOut)
             viewController.dismiss(viewController: loggedOut.viewControllable)
             self.loggedOut = nil
         }
-        let loggedIn = loggedInBuilder.build(withListener: interactor)
+
+        let loggedIn = loggedInBuilder.build(withListener: interactor, player1Name: player1Name, player2Name: player2Name)
         attachChild(loggedIn)
     }
+
+    // MARK: - Private
+
+    private let loggedOutBuilder: LoggedOutBuildable
+    private let loggedInBuilder: LoggedInBuildable
+
+    private var loggedOut: ViewableRouting?
 
     private func routeToLoggedOut() {
         let loggedOut = loggedOutBuilder.build(withListener: interactor)

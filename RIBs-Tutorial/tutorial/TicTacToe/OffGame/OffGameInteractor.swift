@@ -1,9 +1,17 @@
 //
-//  OffGameInteractor.swift
-//  TicTacToe
+//  Copyright (c) 2017. Uber Technologies
 //
-//  Created by M Kim on 2021/11/24.
-//  Copyright © 2021 Uber. All rights reserved.
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 
 import RIBs
@@ -14,12 +22,13 @@ protocol OffGameRouting: ViewableRouting {
 }
 
 protocol OffGamePresentable: Presentable {
-    var listener: OffGamePresentableListener? { get set }
+    weak var listener: OffGamePresentableListener? { get set }
+    func set(score: Score)
     // TODO: Declare methods the interactor can invoke the presenter to present data.
 }
 
 protocol OffGameListener: AnyObject {
-    // TODO: Declare methods the interactor can invoke to communicate with other RIBs.
+    func startTicTacToe()
 }
 
 final class OffGameInteractor: PresentableInteractor<OffGamePresentable>, OffGameInteractable, OffGamePresentableListener {
@@ -29,18 +38,39 @@ final class OffGameInteractor: PresentableInteractor<OffGamePresentable>, OffGam
 
     // TODO: Add additional dependencies to constructor. Do not perform any logic
     // in constructor.
-    override init(presenter: OffGamePresentable) {
+    init(presenter: OffGamePresentable,
+         scoreStream: ScoreStream) {
+        self.scoreStream = scoreStream
         super.init(presenter: presenter)
         presenter.listener = self
     }
 
     override func didBecomeActive() {
         super.didBecomeActive()
+        updateScore()
         // TODO: Implement business logic here.
     }
 
     override func willResignActive() {
         super.willResignActive()
         // TODO: Pause any business logic.
+    }
+
+    // MARK: - OffGamePresentableListener
+
+    func startGame() {
+        listener?.startTicTacToe()
+    }
+    
+    private let scoreStream: ScoreStream
+    
+    private func updateScore() {
+        scoreStream.score
+            .subscribe (
+                onNext: { (score: Score) in
+                    self.presenter.set(score: score)
+                }
+            )
+            .disposeOnDeactivate(interactor: self)
     }
 }

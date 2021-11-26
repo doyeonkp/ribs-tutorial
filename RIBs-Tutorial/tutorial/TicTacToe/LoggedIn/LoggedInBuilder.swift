@@ -1,31 +1,50 @@
 //
-//  LoggedInBuilder.swift
-//  TicTacToe
+//  Copyright (c) 2017. Uber Technologies
 //
-//  Created by M Kim on 2021/11/24.
-//  Copyright © 2021 Uber. All rights reserved.
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 
 import RIBs
 
 protocol LoggedInDependency: Dependency {
     var loggedInViewController: LoggedInViewControllable { get }
-
-    // TODO: Declare the set of dependencies required by this RIB, but cannot be
-    // created by this RIB.
 }
 
-final class LoggedInComponent: Component<LoggedInDependency>, OffGameDependency {
+final class LoggedInComponent: Component<LoggedInDependency> {
+    let player1Name: String
+    let player2Name: String
+    
+    init(dependency: LoggedInDependency, player1Name: String, player2Name: String) {
+        self.player1Name = player1Name
+        self.player2Name = player2Name
+        super.init(dependency: dependency)
+    }
+    
     fileprivate var loggedInViewController: LoggedInViewControllable {
         return dependency.loggedInViewController
     }
-    // TODO: Declare 'fileprivate' dependencies that are only used by this RIB.
+    
+    var mutableScoreStream: MutableScoreStream {
+        return shared { ScoreStreamImpl() }
+    }
 }
 
 // MARK: - Builder
 
 protocol LoggedInBuildable: Buildable {
-    func build(withListener listener: LoggedInListener) -> LoggedInRouting
+    func build(withListener listener: LoggedInListener,
+                      player1Name: String,
+                      player2Name: String) -> LoggedInRouting
 }
 
 final class LoggedInBuilder: Builder<LoggedInDependency>, LoggedInBuildable {
@@ -34,13 +53,16 @@ final class LoggedInBuilder: Builder<LoggedInDependency>, LoggedInBuildable {
         super.init(dependency: dependency)
     }
 
-    func build(withListener listener: LoggedInListener) -> LoggedInRouting {
-        let component = LoggedInComponent(dependency: dependency)
-        let interactor = LoggedInInteractor()
+    func build(withListener listener: LoggedInListener, player1Name: String, player2Name: String) -> LoggedInRouting {
+        let component = LoggedInComponent(dependency: dependency, player1Name: player1Name, player2Name: player2Name)
+        let interactor = LoggedInInteractor(mutableScoreStream: component.mutableScoreStream)
         interactor.listener = listener
+
         let offGameBuilder = OffGameBuilder(dependency: component)
+        let ticTacToeBuilder = TicTacToeBuilder(dependency: component)
         return LoggedInRouter(interactor: interactor,
-                                              viewController: component.loggedInViewController,
-                                              offGameBuilder: offGameBuilder)
+                              viewController: component.loggedInViewController,
+                              offGameBuilder: offGameBuilder,
+                              ticTacToeBuilder: ticTacToeBuilder)
     }
 }

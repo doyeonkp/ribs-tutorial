@@ -55,7 +55,7 @@ final class LoggedOutViewController: UIViewController, LoggedOutPresentable, Log
             maker.top.equalTo(self.view).offset(100)
             maker.leading.trailing.equalTo(self.view).inset(40)
             maker.height.equalTo(40)
-        }
+        }                    
 
         let player2Field = UITextField()
         player2Field.borderStyle = UITextBorderStyle.line

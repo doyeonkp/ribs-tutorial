@@ -20,15 +20,14 @@ import UIKit
 
 protocol TicTacToePresentableListener: AnyObject {
     func placeCurrentPlayerMark(atRow row: Int, col: Int)
-//    func announce(winner: PlayerType?, withCompletionHandler handler: @escaping () -> ())
-//    func closeGame()
 }
 
 final class TicTacToeViewController: UIViewController, TicTacToePresentable, TicTacToeViewControllable {
-    
+
     weak var listener: TicTacToePresentableListener?
 
-    init(player1Name: String, player2Name: String) {
+    init(player1Name: String,
+         player2Name: String) {
         self.player1Name = player1Name
         self.player2Name = player2Name
         super.init(nibName: nil, bundle: nil)
@@ -53,21 +52,21 @@ final class TicTacToeViewController: UIViewController, TicTacToePresentable, Tic
         cell?.backgroundColor = playerType.color
     }
 
-    func announce(winner: PlayerType?, withCompletionHandler handler: @escaping() -> ()) {
+    func announce(winner: PlayerType?, withCompletionHandler handler: @escaping () -> ()) {
         let winnerString: String = {
             if let winner = winner {
                 switch winner {
                 case .player1:
-                    return player1Name +  "Won!"
+                    return "\(player1Name) Won!"
                 case .player2:
-                    return player2Name +  "Won!"
+                    return "\(player2Name) Won!"
                 }
             } else {
-                return "It's a Draw!"
+                return "It's a Tie"
             }
-        } ()
+        }()
         let alert = UIAlertController(title: winnerString, message: nil, preferredStyle: .alert)
-        let closeAction = UIAlertAction(title: "Close Game", style: UIAlertActionStyle.default) { [weak self] _ in
+        let closeAction = UIAlertAction(title: "Close Game", style: UIAlertActionStyle.default) { _ in
             handler()
         }
         alert.addAction(closeAction)
@@ -75,9 +74,10 @@ final class TicTacToeViewController: UIViewController, TicTacToePresentable, Tic
     }
 
     // MARK: - Private
-    private let player1Name: String
+
     private let player2Name: String
-    
+    private let player1Name: String
+
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 0

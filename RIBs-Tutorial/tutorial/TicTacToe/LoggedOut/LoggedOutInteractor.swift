@@ -31,6 +31,7 @@ protocol LoggedOutListener: AnyObject {
 }
 
 final class LoggedOutInteractor: PresentableInteractor<LoggedOutPresentable>, LoggedOutInteractable, LoggedOutPresentableListener {
+
     weak var router: LoggedOutRouting?
     weak var listener: LoggedOutListener?
 
@@ -52,6 +53,7 @@ final class LoggedOutInteractor: PresentableInteractor<LoggedOutPresentable>, Lo
     }
 
     // MARK: - LoggedOutPresentableListener
+
     func login(withPlayer1Name player1Name: String?, player2Name: String?) {
         let player1NameWithDefault = playerName(player1Name, withDefaultName: "Player 1")
         let player2NameWithDefault = playerName(player2Name, withDefaultName: "Player 2")

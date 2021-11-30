@@ -15,27 +15,30 @@
 //
 
 import RxSwift
+import RxCocoa
 
-struct Score {
-    let player1Score: Int
-    let player2Score: Int
+public struct Score {
+    public let player1Score: Int
+    public let player2Score: Int
 
-    static func equals(lhs: Score, rhs: Score) -> Bool {
+    public static func equals(lhs: Score, rhs: Score) -> Bool {
         return lhs.player1Score == rhs.player1Score && lhs.player2Score == rhs.player2Score
     }
 }
 
-protocol ScoreStream: class {
+public protocol ScoreStream: AnyObject {
     var score: Observable<Score> { get }
 }
 
-protocol MutableScoreStream: ScoreStream {
-    func updateScore(withWinner winner: PlayerType?)
+public protocol MutableScoreStream: ScoreStream {
+    func updateScore(with winner: PlayerType)
 }
 
-class ScoreStreamImpl: MutableScoreStream {
+public class ScoreStreamImpl: MutableScoreStream {
 
-    var score: Observable<Score> {
+    public init() {}
+
+    public var score: Observable<Score> {
         return variable
             .asObservable()
             .distinctUntilChanged { (lhs: Score, rhs: Score) -> Bool in
@@ -43,25 +46,22 @@ class ScoreStreamImpl: MutableScoreStream {
             }
     }
 
-    func updateScore(withWinner winner: PlayerType? = nil) {
+    public func updateScore(with winner: PlayerType) {
         let newScore: Score = {
             let currentScore = variable.value
-            if let winner = winner {
-                switch winner {
-                case .player1:
-                    return Score(player1Score: currentScore.player1Score + 1, player2Score: currentScore.player2Score)
-                case .player2:
-                    return Score(player1Score: currentScore.player1Score, player2Score: currentScore.player2Score + 1)
-                }
-            }
-            else{
-                return Score(player1Score: currentScore.player1Score, player2Score: currentScore.player2Score)
+            switch winner {
+            case .player1:
+                return Score(player1Score: currentScore.player1Score + 1, player2Score: currentScore.player2Score)
+            case .player2:
+                return Score(player1Score: currentScore.player1Score, player2Score: currentScore.player2Score + 1)
+            default:
+                return currentScore
             }
         }()
-        variable.value = newScore
+        variable.accept(newScore)
     }
 
     // MARK: - Private
 
-    private let variable = Variable<Score>(Score(player1Score: 0, player2Score: 0))
+    private let variable = BehaviorRelay<Score>(value: Score(player1Score: 0, player2Score: 0))
 }
